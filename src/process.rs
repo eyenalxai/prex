@@ -84,3 +84,11 @@ pub fn spawn_and_wait_wine(
         }
     }
 }
+
+pub fn format_command(cmd: &Command) -> String {
+    std::iter::once(cmd.get_program())
+        .chain(cmd.get_args())
+        .map(|part| part.to_string_lossy())
+        .collect::<Vec<_>>()
+        .join(" ")
+}
