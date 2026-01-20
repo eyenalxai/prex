@@ -11,17 +11,32 @@ pub struct LaunchContext {
     pub proton_path: PathBuf,
 }
 
-pub fn resolve_launch_context(steam: &Steam, appid: &str, exe: &Path) -> Result<LaunchContext> {
+pub fn resolve_launch_context(
+    steam: &Steam,
+    appid: &str,
+    exe: &Path,
+    resolve_in_game_dir: bool,
+) -> Result<LaunchContext> {
     let library_path = steam.find_library_for_app(appid)?;
     let install_dir = steam.get_install_dir(&library_path, appid)?;
-    let exe_full_path = install_dir.join(exe);
+    let exe_full_path = if resolve_in_game_dir {
+        install_dir.join(exe)
+    } else if exe.is_absolute() {
+        exe.to_path_buf()
+    } else {
+        std::env::current_dir()?.join(exe)
+    };
 
     if !exe_full_path.exists() {
-        bail!(
-            "Executable not found: {}\nLooking in: {}",
-            exe.display(),
-            install_dir.display()
-        );
+        if resolve_in_game_dir {
+            bail!(
+                "Executable not found: {}\nLooking in: {}",
+                exe.display(),
+                install_dir.display()
+            );
+        }
+
+        bail!("Executable not found: {}", exe_full_path.display());
     }
 
     let compat_tool = steam.get_compat_tool(appid)?;

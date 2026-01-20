@@ -27,7 +27,7 @@ pub enum CommandKind {
         steam_dir: Option<String>,
         #[arg(help = "Steam application ID (e.g. 123456)")]
         appid: String,
-        #[arg(help = "Path to executable, relative to game install directory")]
+        #[arg(help = "Path to Windows executable")]
         exe: PathBuf,
     },
     #[command(about = "Run an executable in an already-running game's Proton session")]

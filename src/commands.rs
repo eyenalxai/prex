@@ -33,7 +33,7 @@ pub fn users(steam_dir: Option<String>) -> Result<()> {
 
 pub fn run(dry_run: bool, steam_dir: Option<String>, appid: &str, exe: &Path) -> Result<()> {
     let steam = Steam::new(steam_dir)?;
-    let context = resolve_launch_context(&steam, appid, exe)?;
+    let context = resolve_launch_context(&steam, appid, exe, false)?;
     let cmd = ProtonCommand {
         proton_path: context.proton_path,
         exe_path: context.exe_full_path,
@@ -78,7 +78,7 @@ pub fn launch(
     exe: &Path,
 ) -> Result<()> {
     let steam = Steam::new(steam_dir)?;
-    let context = resolve_launch_context(&steam, appid, exe)?;
+    let context = resolve_launch_context(&steam, appid, exe, true)?;
     let launch_options = steam.get_launch_options(user_id.as_deref(), appid)?;
     let cmd = ProtonCommand {
         proton_path: context.proton_path,
