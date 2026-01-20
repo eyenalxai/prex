@@ -46,7 +46,7 @@ Keeps any launch options you set in Steam, for example:
 LD_PRELOAD= gamescope -f -H 1440 -h 1440 -r 75 --mangoapp -- env LD_PRELOAD="$LD_PRELOAD" gamemoderun %command%
 ```
 
-#### Seamless Co-op for Elden Ring
+#### Seamless Co-op for Elden Ring example
 ```sh
 parton launch 1245620 --user-id 59710912 "Game/ersc_launcher.exe" 
 ```
