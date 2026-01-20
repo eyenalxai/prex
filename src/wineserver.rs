@@ -70,16 +70,23 @@ impl WineserverInfo {
     }
 }
 
-pub fn scan_running_games() -> impl Iterator<Item = WineserverInfo> {
+#[must_use]
+pub fn scan_running_games() -> Vec<WineserverInfo> {
     let proc = match fs::read_dir("/proc") {
         Ok(dir) => dir,
-        Err(_) => return Vec::new().into_iter(),
+        Err(_) => return Vec::new(),
     };
 
     let mut results = Vec::new();
 
     for entry in proc.flatten() {
-        if entry.file_name().to_string_lossy().parse::<u32>().is_err() {
+        let file_name = entry.file_name();
+        if !file_name
+            .as_os_str()
+            .as_encoded_bytes()
+            .iter()
+            .all(|byte| byte.is_ascii_digit())
+        {
             continue;
         }
 
@@ -130,7 +137,7 @@ pub fn scan_running_games() -> impl Iterator<Item = WineserverInfo> {
         });
     }
 
-    results.into_iter()
+    results
 }
 
 fn parse_environ(data: &[u8]) -> HashMap<String, String> {
