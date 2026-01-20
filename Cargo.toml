@@ -1,5 +1,5 @@
 [package]
-name = "parton"
+name = "pfx"
 version = "0.2.2"
 edition = "2024"
 

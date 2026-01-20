@@ -41,7 +41,7 @@ impl WineserverInfo {
         let mut cmd = Command::new(&self.wine64);
 
         if let Some(res) = bypass_gamescope {
-            let desktop_name = format!("parton{}", process::id());
+            let desktop_name = format!("pfx{}", process::id());
             cmd.arg("explorer")
                 .arg(format!("/desktop={desktop_name},{res}"))
                 .arg(exe)
