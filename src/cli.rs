@@ -3,7 +3,7 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(name = "pfx")]
+#[command(name = "prex")]
 #[command(about = "Run Windows executables in Proton contexts")]
 pub struct Cli {
     #[command(subcommand)]

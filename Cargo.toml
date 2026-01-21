@@ -1,5 +1,5 @@
 [package]
-name = "pfx"
+name = "prex"
 version = "0.2.6"
 edition = "2024"
 

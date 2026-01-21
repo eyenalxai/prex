@@ -242,7 +242,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pfx"
+name = "prex"
 version = "0.2.6"
 dependencies = [
  "anyhow",

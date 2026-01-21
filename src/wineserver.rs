@@ -41,7 +41,7 @@ impl WineserverInfo {
         let mut cmd = Command::new(&self.wine64);
 
         if let Some(res) = bypass_gamescope {
-            let desktop_name = format!("pfx{}", process::id());
+            let desktop_name = format!("prex{}", process::id());
             cmd.arg("explorer")
                 .arg(format!("/desktop={desktop_name},{res}"))
                 .arg(exe)
@@ -65,7 +65,7 @@ impl WineserverInfo {
                     std::env::set_var(var, val);
                 }
             }
-            std::env::set_var("WINEPREFIX", self.compatdata.join("pfx"));
+            std::env::set_var("WINEPREFIX", self.compatdata.join("prex"));
         }
     }
 }

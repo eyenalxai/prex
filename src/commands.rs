@@ -56,7 +56,7 @@ pub fn cmd(dry_run: bool, steam_dir: Option<String>, appid: &str) -> Result<()> 
         .map_or("proton_experimental", String::as_str);
     let proton_path = steam.get_proton_path(&library_path, compat_tool_name)?;
     let compat_data_path = steam.get_compat_data_path(&library_path, appid);
-    let exe_path = compat_data_path.join("pfx/drive_c/windows/system32/cmd.exe");
+    let exe_path = compat_data_path.join("prex/drive_c/windows/system32/cmd.exe");
 
     if !exe_path.exists() {
         bail!("Executable not found: {}", exe_path.display());
