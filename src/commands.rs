@@ -119,3 +119,17 @@ pub fn launch(
 
     cmd.execute(dry_run)
 }
+
+pub fn path(steam_dir: Option<String>, appid: &str) -> Result<()> {
+    let steam = Steam::new(steam_dir)?;
+    let library_path = steam.find_library_for_app(appid)?;
+    let compat_data_path = steam.get_compat_data_path(&library_path, appid);
+    let prefix_path = compat_data_path.join("pfx");
+
+    if !prefix_path.exists() {
+        bail!("Prefix not found: {}", prefix_path.display());
+    }
+
+    println!("{}", prefix_path.display());
+    Ok(())
+}

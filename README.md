@@ -29,6 +29,13 @@ prex ps
 prex run 2050650 ~/Downloads/Fluffy\ Mod\ Manager-818-3-068-1765672670/Modmanager.exe
 ```
 
+### Print a game's Proton prefix path (pfx)
+```sh
+prex path 2050650
+/games/steam/steamapps/compatdata/2050650/pfx
+cd "$(prex path 2050650)"
+```
+
 ### Start something alongside a running game
 ```sh
 prex attach 1245620 "/games/steam/steamapps/compatdata/1245620/prex/drive_c/Program Files/Cheat Engine/Cheat Engine.exe"

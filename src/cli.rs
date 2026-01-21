@@ -87,4 +87,11 @@ pub enum CommandKind {
         )]
         exe: PathBuf,
     },
+    #[command(about = "Print the Proton prefix path for a game")]
+    Path {
+        #[arg(short = 's', long, help = "Path to Steam installation")]
+        steam_dir: Option<String>,
+        #[arg(help = "Steam application ID (e.g. 123456)")]
+        appid: String,
+    },
 }

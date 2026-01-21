@@ -41,5 +41,6 @@ fn main() -> Result<()> {
             appid,
             exe,
         } => commands::launch(dry_run, user_id, steam_dir, &appid, &exe),
+        CommandKind::Path { steam_dir, appid } => commands::path(steam_dir, &appid),
     }
 }
