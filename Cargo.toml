@@ -1,10 +1,11 @@
 [package]
 name = "prex"
-version = "0.4.3"
+version = "0.5.0"
 edition = "2024"
 
 [dependencies]
 anyhow = "1.0.100"
+chrono = "0.4.43"
 clap = { version = "4.5.54", features = ["derive"] }
 clap_complete = { version = "4.5.65", features = ["unstable-dynamic"] }
 ctrlc = "3.5.1"

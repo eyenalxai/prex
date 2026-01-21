@@ -2,6 +2,7 @@ mod cli;
 mod commands;
 mod completers;
 mod db;
+mod paths;
 mod process;
 mod proton;
 mod steam;

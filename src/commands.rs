@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 
 use crate::completers::compatdata_from_exe_path;
 use crate::db;
+use crate::paths::logs_dir;
 use crate::process::{format_command, spawn_and_wait_wine};
 use crate::proton::{ProtonCommand, resolve_launch_context};
 use crate::steam::{Steam, get_game_name};
@@ -109,11 +110,16 @@ pub fn attach(
         return Ok(());
     }
 
+    let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
+    let log_path = logs_dir()?.join(format!("{}_{}.log", info.appid, timestamp));
+    println!("Logging to: {}", log_path.display());
+
     spawn_and_wait_wine(
         cmd,
         Some(&info.wine64),
         exe_name,
         bypass_gamescope.is_some(),
+        Some(&log_path),
     )
 }
 

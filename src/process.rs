@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;
+use std::fs::OpenOptions;
 use std::os::unix::process::CommandExt;
 use std::path::Path;
 use std::process::Command;
@@ -9,8 +10,8 @@ use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
-pub fn spawn_and_wait(cmd: Command) -> Result<()> {
-    spawn_and_wait_wine(cmd, None, None, false)
+pub fn spawn_and_wait(cmd: Command, log_file: Option<&Path>) -> Result<()> {
+    spawn_and_wait_wine(cmd, None, None, false, log_file)
 }
 
 fn interrupted_flag() -> Result<&'static Arc<AtomicBool>> {
@@ -37,7 +38,24 @@ pub fn spawn_and_wait_wine(
     wine64: Option<&Path>,
     exe_to_kill: Option<&str>,
     kill_explorer: bool,
+    log_file: Option<&Path>,
 ) -> Result<()> {
+    if let Some(path) = log_file {
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)
+                .with_context(|| format!("Creating log directory at {}", parent.display()))?;
+        }
+        let file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(path)
+            .with_context(|| format!("Opening log file at {}", path.display()))?;
+        let file_err = file.try_clone().context("Cloning log file handle")?;
+        cmd.stdout(file);
+        cmd.stderr(file_err);
+    }
+
     unsafe {
         cmd.pre_exec(|| {
             nix::unistd::setpgid(Pid::from_raw(0), Pid::from_raw(0))?;

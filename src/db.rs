@@ -1,5 +1,4 @@
 use anyhow::{Context, Result, anyhow};
-use directories::ProjectDirs;
 use rusqlite::{Connection, Row, params};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -20,9 +19,7 @@ fn row_to_entry(row: &Row) -> rusqlite::Result<ModManagerEntry> {
 }
 
 fn db_path() -> Result<PathBuf> {
-    let dirs = ProjectDirs::from("com", "prex", "prex")
-        .ok_or_else(|| anyhow!("Unable to resolve data directory"))?;
-    Ok(dirs.data_dir().join("prex.db"))
+    Ok(crate::paths::data_dir()?.join("prex.db"))
 }
 
 fn open_db() -> Result<Connection> {

@@ -3,6 +3,7 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use crate::paths::logs_dir;
 use crate::process::spawn_and_wait;
 use crate::steam::Steam;
 
@@ -139,6 +140,10 @@ impl ProtonCommand {
             cmd.current_dir(parent);
         }
 
-        spawn_and_wait(cmd)
+        let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
+        let log_path = logs_dir()?.join(format!("{}_{}.log", self.app_id, timestamp));
+        println!("Logging to: {}", log_path.display());
+
+        spawn_and_wait(cmd, Some(&log_path))
     }
 }
