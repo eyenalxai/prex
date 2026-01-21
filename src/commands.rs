@@ -34,7 +34,13 @@ pub fn users(steam_dir: Option<String>) -> Result<()> {
     Ok(())
 }
 
-pub fn run(dry_run: bool, steam_dir: Option<String>, appid: &str, exe: &Path) -> Result<()> {
+pub fn run(
+    dry_run: bool,
+    steam_dir: Option<String>,
+    appid: &str,
+    exe: &Path,
+    args: Vec<OsString>,
+) -> Result<()> {
     let steam = Steam::new(steam_dir)?;
     let context = resolve_launch_context(&steam, appid, exe, false)?;
     let cmd = ProtonCommand {
@@ -44,12 +50,18 @@ pub fn run(dry_run: bool, steam_dir: Option<String>, appid: &str, exe: &Path) ->
         steam_client_path: steam.root_path().to_path_buf(),
         app_id: appid.to_string(),
         launch_options: None,
+        args,
     };
 
     cmd.execute(dry_run)
 }
 
-pub fn cmd(dry_run: bool, steam_dir: Option<String>, appid: &str) -> Result<()> {
+pub fn cmd(
+    dry_run: bool,
+    steam_dir: Option<String>,
+    appid: &str,
+    args: Vec<OsString>,
+) -> Result<()> {
     let steam = Steam::new(steam_dir)?;
     let library_path = steam.find_library_for_app(appid)?;
     let compat_tool = steam.get_compat_tool(appid)?;
@@ -72,6 +84,7 @@ pub fn cmd(dry_run: bool, steam_dir: Option<String>, appid: &str) -> Result<()> 
         steam_client_path: steam.root_path().to_path_buf(),
         app_id: appid.to_string(),
         launch_options: None,
+        args,
     };
 
     cmd.execute(dry_run)
@@ -107,6 +120,7 @@ pub fn launch(
     steam_dir: Option<String>,
     appid: &str,
     exe: &Path,
+    args: Vec<OsString>,
 ) -> Result<()> {
     let steam = Steam::new(steam_dir)?;
     let context = resolve_launch_context(&steam, appid, exe, true)?;
@@ -118,6 +132,7 @@ pub fn launch(
         steam_client_path: steam.root_path().to_path_buf(),
         app_id: appid.to_string(),
         launch_options,
+        args,
     };
 
     cmd.execute(dry_run)

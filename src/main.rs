@@ -25,12 +25,14 @@ fn main() -> Result<()> {
             steam_dir,
             appid,
             exe,
-        } => commands::run(dry_run, steam_dir, &appid, &exe),
+            args,
+        } => commands::run(dry_run, steam_dir, &appid, &exe, args),
         CommandKind::Cmd {
             dry_run,
             steam_dir,
             appid,
-        } => commands::cmd(dry_run, steam_dir, &appid),
+            args,
+        } => commands::cmd(dry_run, steam_dir, &appid, args),
         CommandKind::Attach {
             dry_run,
             bypass_gamescope,
@@ -44,7 +46,8 @@ fn main() -> Result<()> {
             steam_dir,
             appid,
             exe,
-        } => commands::launch(dry_run, user_id, steam_dir, &appid, &exe),
+            args,
+        } => commands::launch(dry_run, user_id, steam_dir, &appid, &exe, args),
         CommandKind::Path { steam_dir, appid } => commands::path(steam_dir, &appid),
         CommandKind::Completions { shell } => commands::completions(shell),
     }

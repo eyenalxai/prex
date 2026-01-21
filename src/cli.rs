@@ -44,6 +44,12 @@ pub enum CommandKind {
         appid: String,
         #[arg(help = "Path to Windows executable")]
         exe: PathBuf,
+        #[arg(
+            trailing_var_arg = true,
+            allow_hyphen_values = true,
+            help = "Arguments to pass to the executable"
+        )]
+        args: Vec<OsString>,
     },
     #[command(about = "Open cmd.exe in a game's Proton prefix")]
     Cmd {
@@ -56,6 +62,12 @@ pub enum CommandKind {
             add = ArgValueCompleter::new(complete_installed_appid)
         )]
         appid: String,
+        #[arg(
+            trailing_var_arg = true,
+            allow_hyphen_values = true,
+            help = "Arguments to pass to cmd.exe"
+        )]
+        args: Vec<OsString>,
     },
     #[command(about = "Run an executable in an already-running game's Proton session")]
     Attach {
@@ -111,6 +123,12 @@ pub enum CommandKind {
             help = "Path to executable, relative to the game install root (example: Game/ersc_launcher.exe)"
         )]
         exe: PathBuf,
+        #[arg(
+            trailing_var_arg = true,
+            allow_hyphen_values = true,
+            help = "Arguments to pass to the executable"
+        )]
+        args: Vec<OsString>,
     },
     #[command(about = "Print the Proton prefix path for a game")]
     Path {

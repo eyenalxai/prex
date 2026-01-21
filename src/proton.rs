@@ -1,4 +1,5 @@
 use anyhow::{Context, Result, bail};
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -62,6 +63,7 @@ pub struct ProtonCommand {
     pub steam_client_path: PathBuf,
     pub app_id: String,
     pub launch_options: Option<String>,
+    pub args: Vec<OsString>,
 }
 
 impl ProtonCommand {
@@ -73,6 +75,21 @@ impl ProtonCommand {
         let exe_path =
             shlex::try_quote(exe_path_lossy.as_ref()).context("Failed to quote exe path")?;
         let proton_cmd = format!("{proton_path} waitforexitandrun {exe_path}");
+        let args = self
+            .args
+            .iter()
+            .map(|arg| {
+                let arg_lossy = arg.to_string_lossy().into_owned();
+                shlex::try_quote(arg_lossy.as_str())
+                    .map(|value| value.into_owned())
+                    .context("Failed to quote argument")
+            })
+            .collect::<Result<Vec<_>>>()?;
+        let proton_cmd = if args.is_empty() {
+            proton_cmd
+        } else {
+            format!("{proton_cmd} {}", args.join(" "))
+        };
 
         match &self.launch_options {
             Some(opts) if opts.contains("%command%") => Ok(opts.replace("%command%", &proton_cmd)),
