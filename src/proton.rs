@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{anyhow, bail, Context, Result};
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -59,6 +59,7 @@ pub struct ProtonCommand {
     pub launch_options: Option<String>,
     pub args: Vec<OsString>,
     pub use_run_verb: bool,
+    pub log_output: bool,
 }
 
 impl ProtonCommand {
@@ -81,7 +82,11 @@ impl ProtonCommand {
             shlex::try_quote(proton_path.as_str()).context("Failed to quote proton path")?;
         let exe_path = Self::path_to_string(&self.exe_path, "Executable path")?;
         let exe_path = shlex::try_quote(exe_path.as_str()).context("Failed to quote exe path")?;
-        let verb = if self.use_run_verb { "run" } else { "waitforexitandrun" };
+        let verb = if self.use_run_verb {
+            "run"
+        } else {
+            "waitforexitandrun"
+        };
         let proton_cmd = format!("{proton_path} {verb} {exe_path}");
         let args = self
             .args
@@ -146,10 +151,15 @@ impl ProtonCommand {
             cmd.current_dir(parent);
         }
 
-        let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
-        let log_path = logs_dir()?.join(format!("{}_{}.log", self.app_id, timestamp));
-        println!("Logging to: {}", log_path.display());
+        let log_path = if self.log_output {
+            let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
+            let log_path = logs_dir()?.join(format!("{}_{}.log", self.app_id, timestamp));
+            println!("Logging to: {}", log_path.display());
+            Some(log_path)
+        } else {
+            None
+        };
 
-        spawn_and_wait(cmd, Some(&log_path))
+        spawn_and_wait(cmd, log_path.as_deref())
     }
 }

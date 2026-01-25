@@ -1,7 +1,7 @@
-use anyhow::{Result, bail};
+use anyhow::{anyhow, bail, Context, Result};
 use clap::CommandFactory;
-use clap_complete::Shell;
 use clap_complete::env::{Bash, Elvish, EnvCompleter, Fish, Powershell, Zsh};
+use clap_complete::Shell;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
@@ -9,9 +9,9 @@ use crate::completers::compatdata_from_exe_path;
 use crate::db;
 use crate::paths::logs_dir;
 use crate::process::{format_command, spawn_and_wait_wine};
-use crate::proton::{ProtonCommand, resolve_launch_context};
-use crate::steam::{Steam, get_game_name};
-use crate::wineserver::{WineserverInfo, scan_running_games};
+use crate::proton::{resolve_launch_context, ProtonCommand};
+use crate::steam::{get_game_name, Steam};
+use crate::wineserver::{scan_running_games, WineserverInfo};
 
 pub fn ls(steam_dir: Option<String>) -> Result<()> {
     let steam = Steam::new(steam_dir)?;
@@ -56,6 +56,7 @@ pub fn run(
         launch_options: None,
         args,
         use_run_verb: single_instance,
+        log_output: true,
     };
     cmd.execute(dry_run)
 }
@@ -64,25 +65,74 @@ pub fn cmd(
     dry_run: bool,
     steam_dir: Option<String>,
     appid: &str,
+    terminal: bool,
     args: Vec<OsString>,
 ) -> Result<()> {
     let steam = Steam::new(steam_dir)?;
     let (proton_path, compat_data_path) = steam.resolve_proton_paths(appid)?;
-    let exe_path = compat_data_path.join("pfx/drive_c/windows/system32/cmd.exe");
+    let cmd_exe_path = compat_data_path.join("pfx/drive_c/windows/system32/cmd.exe");
 
-    if !exe_path.exists() {
-        bail!("Executable not found: {}", exe_path.display());
+    if !cmd_exe_path.exists() {
+        bail!("Executable not found: {}", cmd_exe_path.display());
+    }
+
+    if terminal {
+        // Run wine64 cmd directly in the current terminal
+        let proton_root = proton_path
+            .parent()
+            .ok_or_else(|| anyhow!("Invalid Proton path: {}", proton_path.display()))?;
+        let wine64 = proton_root.join("files/bin/wine64");
+        if !wine64.exists() {
+            bail!("wine64 not found: {}", wine64.display());
+        }
+
+        let mut cmd = std::process::Command::new(&wine64);
+        cmd.arg("cmd").args(&args);
+        cmd.env("WINEPREFIX", compat_data_path.join("pfx"));
+        cmd.env("STEAM_COMPAT_DATA_PATH", &compat_data_path);
+        cmd.env("SteamAppId", appid);
+        cmd.env("SteamGameId", appid);
+        cmd.current_dir(compat_data_path.join("pfx/drive_c"));
+
+        if dry_run {
+            println!("Environment:");
+            println!("  WINEPREFIX={}/pfx", compat_data_path.display());
+            println!("  STEAM_COMPAT_DATA_PATH={}", compat_data_path.display());
+            println!("  SteamAppId={}", appid);
+            println!("  SteamGameId={}", appid);
+            println!("\nCommand:");
+            println!(
+                "  {} cmd {}",
+                wine64.display(),
+                args.iter()
+                    .map(|a| a.to_string_lossy().into_owned())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            );
+            return Ok(());
+        }
+
+        // Spawn directly, inheriting stdin/stdout/stderr for interactive use
+        let status = cmd.status().context("Failed to run wine64 cmd")?;
+        if !status.success() {
+            let code = status
+                .code()
+                .map_or_else(|| "unknown".to_string(), |c| c.to_string());
+            bail!("Command exited with status: {}", code);
+        }
+        return Ok(());
     }
 
     let cmd = ProtonCommand {
         proton_path,
-        exe_path,
+        exe_path: cmd_exe_path,
         compat_data_path,
         steam_client_path: steam.root_path().to_path_buf(),
         app_id: appid.to_string(),
         launch_options: None,
         args,
         use_run_verb: false,
+        log_output: true,
     };
 
     cmd.execute(dry_run)
@@ -137,6 +187,7 @@ pub fn launch(
         launch_options,
         args,
         use_run_verb: false,
+        log_output: true,
     };
 
     cmd.execute(dry_run)
@@ -214,7 +265,11 @@ pub fn mm_list() -> Result<()> {
     for entry in entries {
         let compatdata = compatdata_from_exe_path(&entry.exe_path);
         let name = get_game_name(compatdata, &entry.appid);
-        let active = if entry.is_active { "active" } else { "inactive" };
+        let active = if entry.is_active {
+            "active"
+        } else {
+            "inactive"
+        };
         println!(
             "{}\t{}\t{}\t{}",
             entry.appid,
@@ -250,6 +305,7 @@ pub fn nxm(url: &str) -> Result<()> {
         launch_options: None,
         args,
         use_run_verb: true,
+        log_output: true,
     };
     cmd.execute(false)
 }

@@ -1,14 +1,11 @@
 use clap::{Parser, Subcommand};
-use clap_complete::Shell;
 use clap_complete::engine::ArgValueCompleter;
+use clap_complete::Shell;
 use std::ffi::OsString;
 use std::path::PathBuf;
 
 use crate::completers::{
-    complete_installed_appid,
-    complete_registered_appid,
-    complete_running_appid,
-    complete_user_id,
+    complete_installed_appid, complete_registered_appid, complete_running_appid, complete_user_id,
 };
 
 #[derive(Parser)]
@@ -55,6 +52,12 @@ pub enum CommandKind {
     Cmd {
         #[arg(short = 'n', long, help = "Print the command without executing")]
         dry_run: bool,
+        #[arg(
+            short = 't',
+            long,
+            help = "Run in current terminal instead of opening a window"
+        )]
+        terminal: bool,
         #[arg(short = 's', long, help = "Path to Steam installation")]
         steam_dir: Option<String>,
         #[arg(
